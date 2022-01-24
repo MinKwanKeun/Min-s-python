@@ -14,7 +14,7 @@ def delete_iframe(url):
     
     return src_url
 
-url1 = "https://blog.naver.com/starryspace/222620589776"
+url1 = "https://blog.naver.com/starryspace/222626671980"
 src_url1 = delete_iframe(url1)
 
 now = dt.datetime.now()

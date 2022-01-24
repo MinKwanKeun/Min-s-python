@@ -18,4 +18,77 @@
 # [주의 사항]
 # - 실습하는 시점에 위 매물이 없다면 다른 곳으로 대체 가능
 
-# 진짜 되나
+from selenium import webdriver
+import requests
+from bs4 import BeautifulSoup
+import time
+
+class saving_list:
+    def __init__(self, title='', bank='', interest_rate=''):
+        self.title = title
+        self.bank = bank
+        self.interest_rate = interest_rate
+        print("이름 : " + self.title)
+        print("은행 : " + self.bank)
+        print("이자율 : " + self.interest_rate)
+
+options = webdriver.ChromeOptions()
+
+browser = webdriver.Chrome()
+browser.maximize_window()
+
+# 페이지 이동
+url = "https://www.naver.com/"
+browser.get(url)
+
+soup = BeautifulSoup(browser.page_source, "lxml")
+
+# 1. 검색창에 적금 입력
+element = browser.find_element_by_name("query")
+element.send_keys("적금")
+
+# 2. 검색 버튼 클릭
+elem = browser.find_element_by_id("search_btn")
+elem.click()
+
+# 3. 검색 소요시간 딜레이
+# time.sleep(2)
+
+# 4. 현재 url 주소 저장
+url = browser.current_url
+browser.get(url)
+
+soup = BeautifulSoup(browser.page_source, "lxml")
+
+savings = soup.find_all("strong", attrs={"class":"this_text"})
+banks = soup.find_all("span", attrs={"class":"text"})
+interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
+
+total = soup.find("span", attrs={"class":"_total"}).get_text()
+# current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
+
+print(type(total))
+
+index = 0
+while True:
+    current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
+    
+    if total == current_page:
+            break
+    elif index == 6:
+        # browser.find_element_by_class_name("pg_next on").click()
+        # browser.find_element_by_link_text("다음").click()
+        browser.find_element_by_xpath("//*[@id='main_pack']/section[1]/div[2]/div/div/div[3]/div/a[2]").click()
+        index = 0
+
+    soup = BeautifulSoup(browser.page_source, "lxml")
+
+    savings = soup.find_all("strong", attrs={"class":"this_text"})
+    banks = soup.find_all("span", attrs={"class":"text"})
+    interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
+    
+    for saving in savings:
+        # current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
+        saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
+        print("")
+        index += 1
