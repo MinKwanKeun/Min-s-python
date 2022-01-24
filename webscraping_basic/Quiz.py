@@ -31,6 +31,7 @@ class saving_list:
         print("이름 : " + self.title)
         print("은행 : " + self.bank)
         print("이자율 : " + self.interest_rate)
+        print(" ")
 
 options = webdriver.ChromeOptions()
 
@@ -60,26 +61,34 @@ browser.get(url)
 
 soup = BeautifulSoup(browser.page_source, "lxml")
 
-savings = soup.find_all("strong", attrs={"class":"this_text"})
-banks = soup.find_all("span", attrs={"class":"text"})
-interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
+# savings = soup.find_all("strong", attrs={"class":"this_text"})
+# banks = soup.find_all("span", attrs={"class":"text"})
+# interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
 
 total = soup.find("span", attrs={"class":"_total"}).get_text()
 # current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
 
 print(type(total))
+print(total)
 
 index = 0
 while True:
     current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
-    
-    if total == current_page:
-            break
-    elif index == 6:
-        # browser.find_element_by_class_name("pg_next on").click()
-        # browser.find_element_by_link_text("다음").click()
+
+    if int(total) == int(current_page):
+        print("다음 페이지가 없어 종료합니다.\n")
+        break
+
+    elif index%6 == 0:
         browser.find_element_by_xpath("//*[@id='main_pack']/section[1]/div[2]/div/div/div[3]/div/a[2]").click()
+        print("\n '>' 버튼 클릭\n")
         index = 0
+    
+    print("index : {0}".format(index))
+
+    current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
+
+    print("============== {0} -> Page.[{1}] ================".format(type(current_page), current_page))
 
     soup = BeautifulSoup(browser.page_source, "lxml")
 
@@ -87,8 +96,21 @@ while True:
     banks = soup.find_all("span", attrs={"class":"text"})
     interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
     
+    print(len(savings))
+
     for saving in savings:
         # current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
-        saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
-        print("")
+        # saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
+        # saving.get_text()
+        # print("")
+        if len(savings)%6 != 0:
+            saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
+            # print(saving)
+            # print(bank)
+            # print(interest_rates[index])
         index += 1
+
+    # savings.clear()
+    # banks.clear()
+    # interest_rates.clear()
+    print("다음 페이지로 넘어갑니다.\n")
