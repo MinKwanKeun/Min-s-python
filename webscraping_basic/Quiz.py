@@ -61,10 +61,6 @@ browser.get(url)
 
 soup = BeautifulSoup(browser.page_source, "lxml")
 
-# savings = soup.find_all("strong", attrs={"class":"this_text"})
-# banks = soup.find_all("span", attrs={"class":"text"})
-# interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
-
 total = soup.find("span", attrs={"class":"_total"}).get_text()
 # current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
 
