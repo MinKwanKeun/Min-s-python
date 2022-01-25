@@ -67,7 +67,7 @@ soup = BeautifulSoup(browser.page_source, "lxml")
 
 total = soup.find("span", attrs={"class":"_total"}).get_text()
 
-index = 0
+# index = 0
 p = re.compile("ca.e")
 while True:
     current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
@@ -80,9 +80,9 @@ while True:
         highest_interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
         
         f = open("information of saving.txt", "w", encoding="utf8")
-        for saving in savings:
+        for index, saving in enumerate(savings):
             saving = saving_list(savings[index].get_text(), banks[index*2].get_text(), banks[index*2+1].get_text(), highest_interest_rates[index].get_text())
-            index += 1
+            # index += 1
             f.write("이름 : " + saving.title + "\n" + "은행 : " + saving.bank + "\n" + "이율 : " + saving.interest_rate + "\n" + "최대 이율 : " + saving.highest_interest_rate + "\n\n")
         f.close()
 
