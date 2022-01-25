@@ -22,15 +22,19 @@ from selenium import webdriver
 import requests
 from bs4 import BeautifulSoup
 import time
+import re
 
 class saving_list:
-    def __init__(self, title='', bank='', interest_rate=''):
+    def __init__(self, title='', bank='', interest_rate='', highest_interest_rate=''):
         self.title = title
         self.bank = bank
         self.interest_rate = interest_rate
+        self.highest_interest_rate = highest_interest_rate
+
         print("이름 : " + self.title)
         print("은행 : " + self.bank)
         print("이자율 : " + self.interest_rate)
+        print("최대 이자율 : " + self.highest_interest_rate)
         print(" ")
 
 options = webdriver.ChromeOptions()
@@ -62,51 +66,36 @@ browser.get(url)
 soup = BeautifulSoup(browser.page_source, "lxml")
 
 total = soup.find("span", attrs={"class":"_total"}).get_text()
-# current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
-
-print(type(total))
-print(total)
 
 index = 0
+p = re.compile("ca.e")
 while True:
-    current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
-
-    if int(total) == int(current_page):
-        print("다음 페이지가 없어 종료합니다.\n")
-        break
-
-    elif index%6 == 0:
-        browser.find_element_by_xpath("//*[@id='main_pack']/section[1]/div[2]/div/div/div[3]/div/a[2]").click()
-        print("\n '>' 버튼 클릭\n")
-        index = 0
-    
-    print("index : {0}".format(index))
-
     current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
 
     print("============== {0} -> Page.[{1}] ================".format(type(current_page), current_page))
 
+    if int(current_page) == int(total):
+        savings = soup.find_all("strong", attrs={"class":"this_text"})
+        banks = soup.find_all("span", attrs={"class":"text"})
+        highest_interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
+        
+        f = open("information of saving.txt", "w", encoding="utf8")
+        for saving in savings:
+            saving = saving_list(savings[index].get_text(), banks[index*2].get_text(), banks[index*2+1].get_text(), highest_interest_rates[index].get_text())
+            index += 1
+            f.write("이름 : " + saving.title + "\n" + "은행 : " + saving.bank + "\n" + "이율 : " + saving.interest_rate + "\n" + "최대 이율 : " + saving.highest_interest_rate + "\n\n")
+        f.close()
+
+        print("다음 페이지가 없어 종료합니다.\n")
+        break
+
+    else:
+        browser.find_element_by_xpath("//*[@id='main_pack']/section[1]/div[2]/div/div/div[3]/div/a[2]").click()
+        print("\n '>' 버튼 클릭\n")
+        index = 0
+
     soup = BeautifulSoup(browser.page_source, "lxml")
 
-    savings = soup.find_all("strong", attrs={"class":"this_text"})
-    banks = soup.find_all("span", attrs={"class":"text"})
-    interest_rates = soup.find_all("span", attrs={"class":"highest_txt"})
-    
-    print(len(savings))
-
-    for saving in savings:
-        # current_page = soup.find("strong", attrs={"class":"npgs_now _current"}).get_text()
-        # saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
-        # saving.get_text()
-        # print("")
-        if len(savings)%6 != 0:
-            saving = saving_list(savings[index].get_text(), banks[index].get_text(), interest_rates[index].get_text())
-            # print(saving)
-            # print(bank)
-            # print(interest_rates[index])
-        index += 1
-
-    # savings.clear()
-    # banks.clear()
-    # interest_rates.clear()
     print("다음 페이지로 넘어갑니다.\n")
+
+browser.quit()
