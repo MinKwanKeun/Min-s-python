@@ -124,25 +124,52 @@ index = 0
 for new in news:
     head_line_title = new.select_one("div.cjs_t")
     head_line_link = soup.select_one("a.cjs_news_a")["href"]
-    # print(head_line_link)
-    # print(type(head_line_title))
+
     if head_line_title == None:
         continue
     else:
-        # new = news_class(head_line_title, head_line_link)
-        # print(head_line_title.text)
-        # print(head_line_link)
         index += 1
         new = news_class(index, head_line_title.text, head_line_link)
+
     if index == 5:
         break
-# def head_line_news():
 
+# ====================================================================================================
 
-# [헤드라인 뉴스]
-# 1. 무슨 무슨 일이...
-#  (링크 : http://...)
-# 2. 어떤 어떤 일이...
-#  (링크 : http://...)
-# 3. 이런 저런 일이...
-#  (링크 : http://...)
+url = "https://news.naver.com/main/main.naver?mode=LSD&mid=shm&sid1=105"
+res = requests.get(url, headers=headers)
+res.raise_for_status()
+soup = BeautifulSoup(res.text, "lxml")
+
+news = soup.find_all("div", attrs={"class":"cluster_group _cluster_content"})
+
+print("\n[IT 뉴스]")
+index = 0
+for new in news:
+    head_line_title = new.find("a", attrs={"class":"cluster_text_headline nclicks(cls_sci.clsart)"})
+    head_line_link = head_line_title["href"]
+
+    if head_line_title == None:
+        continue
+    else:
+        index += 1
+        new = news_class(index, head_line_title.text, head_line_link)
+
+    if index == 5:
+        break
+
+# ====================================================================================================
+
+url = "https://www.hackers.co.kr/?c=s_lec/lec_study/lec_I_others_english&keywd=haceng_submain_lnb_lec_I_others_english&logger_kw=haceng_submain_lnb_lec_I_others_english#;"
+res = requests.get(url, headers=headers)
+res.raise_for_status()
+soup = BeautifulSoup(res.text, "lxml")
+
+convs = soup.find_all("span", attrs={"class":"conv_sub"})
+
+print("\n[오늘의 영어 회화]\n(한글 지문)")
+for index, conv in enumerate(convs):
+    conv = conv.get_text()
+    print(conv)
+    if index == 3:
+        print("\n(영어 지문)")
