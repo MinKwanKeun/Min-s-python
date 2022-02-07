@@ -46,11 +46,15 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+def create_soup(url):
+    headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"}
+    res = requests.get(url, headers=headers)
+    res.raise_for_status()
+    soup = BeautifulSoup(res.text, "lxml")
+    return soup
+
 url = "https://search.naver.com/search.naver?sm=tab_hty.top&where=nexearch&query=%EC%84%9C%EC%9A%B8+%EB%82%A0%EC%94%A8&oquery=%EB%82%A0%EC%94%A8&tqi=hQui8sp0J14ssQYtQLGssssssq4-047307"
-headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"}
-res = requests.get(url, headers=headers)
-res.raise_for_status()
-soup = BeautifulSoup(res.text, "lxml")
+soup = create_soup(url)
 
 def scrape_weather(summary, now_temp, lowest_temp, highest_temp, rainfall_AM, rainfall_PM, micro_dust, super_micro_dust):
     print("[오늘의 날씨]")
@@ -92,6 +96,8 @@ for index, rainfall in enumerate(rainfall_all):
         break
 
 micro_dust = soup.find("li", attrs={"class":"item_today level1"}).get_text()
+# micro_dust = soup.find("li", attrs={"class":"item_today level1", text=["미세먼지", "초미세먼지"]}).get_text()
+# micro_dust = soup.find("li", attrs={"class":"item_today level1", "id":"dust"}).get_text()
 micro_dust = re.sub("  ", "", micro_dust)
 super_micro_dust = soup.find("li", attrs={"class":"item_today level3"}).get_text()
 super_micro_dust = re.sub("  ", "", super_micro_dust)
@@ -104,9 +110,7 @@ scrape_weather(weather_today.summary, weather_today.now_temp, weather_today.lowe
 # ====================================================================================================
 
 url = "https://news.naver.com/"
-res = requests.get(url, headers=headers)
-res.raise_for_status()
-soup = BeautifulSoup(res.text, "lxml")
+soup = create_soup(url)
 
 class news_class:
     def __init__(self, index, title, link):
@@ -117,7 +121,7 @@ class news_class:
         print("{0}. {1}".format(self.index, self.title))
         print(" (링크 : {0})".format(self.link))
 
-news = soup.select("div > div > section > div > div > div > div > div > div > div")
+news = soup.select("div > div > section > div > div > div > div > div > div > div", limit=6)
 
 print("\n[헤드라인 뉴스]")
 index = 0
@@ -136,24 +140,26 @@ for new in news:
 
 # ====================================================================================================
 
-url = "https://news.naver.com/main/main.naver?mode=LSD&mid=shm&sid1=105"
-res = requests.get(url, headers=headers)
-res.raise_for_status()
-soup = BeautifulSoup(res.text, "lxml")
+url = "https://news.naver.com/main/list.naver?mode=LS2D&mid=shm&sid1=105&sid2=230"
+soup = create_soup(url)
 
-news = soup.find_all("div", attrs={"class":"cluster_group _cluster_content"})
+# news = soup.find_all("div", attrs={"class":"cluster_group _cluster_content"})
+news = soup.find_all("div", attrs={"class":"type06_headline"})
 
 print("\n[IT 뉴스]")
 index = 0
 for new in news:
-    head_line_title = new.find("a", attrs={"class":"cluster_text_headline nclicks(cls_sci.clsart)"})
+    # head_line_title = new.find("a", attrs={"class":"cluster_text_headline nclicks(cls_sci.clsart)"})
+    # head_line_link = head_line_title["href"]
+    head_line_title = new.fetchNextSiblings("dl").find("dt", align="https")
+    print(head_line_title)
     head_line_link = head_line_title["href"]
-
+    
     if head_line_title == None:
         continue
     else:
         index += 1
-        new = news_class(index, head_line_title.text, head_line_link)
+        new = news_class(index, head_line_title.get_text(), head_line_link)
 
     if index == 5:
         break
@@ -161,9 +167,7 @@ for new in news:
 # ====================================================================================================
 
 url = "https://www.hackers.co.kr/?c=s_lec/lec_study/lec_I_others_english&keywd=haceng_submain_lnb_lec_I_others_english&logger_kw=haceng_submain_lnb_lec_I_others_english#;"
-res = requests.get(url, headers=headers)
-res.raise_for_status()
-soup = BeautifulSoup(res.text, "lxml")
+soup = create_soup(url)
 
 convs = soup.find_all("span", attrs={"class":"conv_sub"})
 
